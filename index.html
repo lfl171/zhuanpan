@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>尊享抽奖 · Fortune Wheel</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;600;700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --bg-deep:#08090e;
+  --bg-mid:#0d0f18;
+  --bg-surface:#131522;
+  --bg-glass:rgba(19,21,34,0.65);
+  --bg-card:rgba(22,25,42,0.8);
+  --bg-card-hover:rgba(30,34,56,0.9);
+
+  --champagne-50:#fefdf8;
+  --champagne-100:#fdf6e3;
+  --champagne-200:#f5e6c8;
+  --champagne-300:#e8cfa0;
+  --champagne-400:#d4b574;
+  --champagne-500:#c49b4e;
+  --champagne-600:#a67c3a;
+  --champagne-gradient:linear-gradient(135deg,#f5e6c8 0%,#e8cfa0 30%,#d4b574 60%,#c49b4e 100%);
+  --champagne-shine:linear-gradient(105deg,#fefdf8 0%,#f5e6c8 15%,#d4b574 35%,#e8cfa0 50%,#d4b574 65%,#f5e6c8 85%,#fefdf8 100%);
+
+  --accent-emerald:#34d399;
+  --accent-ruby:#f87171;
+  --accent-sapphire:#60a5fa;
+  --accent-amethyst:#a78bfa;
+
+  --text-primary:#f0ede6;
+  --text-secondary:#9b978e;
+  --text-muted:#5c5a54;
+
+  --border-hairline:rgba(212,181,116,0.08);
+  --border-light:rgba(212,181,116,0.15);
+  --border-accent:rgba(212,181,116,0.35);
+
+  --glow-sm:0 0 12px rgba(212,181,116,0.08);
+  --glow-md:0 0 30px rgba(212,181,116,0.1);
+  --glow-lg:0 0 60px rgba(212,181,116,0.12);
+  --shadow-card:0 8px 32px rgba(0,0,0,0.3),0 2px 8px rgba(0,0,0,0.2);
+  --shadow-elevated:0 24px 64px rgba(0,0,0,0.5),0 8px 24px rgba(0,0,0,0.3);
+
+  --radius-xs:6px;
+  --radius-sm:10px;
+  --radius-md:16px;
+  --radius-lg:24px;
+  --radius-xl:32px;
+
+  --font-display:'Cormorant Garamond','Noto Serif SC',serif;
+  --font-body:'DM Sans','Noto Serif SC',sans-serif;
+  --font-serif:'Noto Serif SC',serif;
+}
+
+html{font-size:16px;scroll-behavior:smooth}
+
+body{
+  font-family:var(--font-body);
+  background:var(--bg-deep);
+  color:var(--text-primary);
+  min-height:100vh;
+  overflow-x:hidden;
+  position:relative;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ====== LAYERED BACKGROUND ====== */
+.bg-layer{position:fixed;inset:0;pointer-events:none;z-index:0}
+
+.bg-layer--gradient{
+  background:
+    radial-gradient(ellipse 100% 80% at 15% 5%,rgba(52,211,153,0.03) 0%,transparent 50%),
+    radial-gradient(ellipse 80% 100% at 85% 95%,rgba(167,139,250,0.03) 0%,transparent 50%),
+    radial-gradient(ellipse 60% 50% at 50% 50%,rgba(212,181,116,0.02) 0%,transparent 60%);
+}
+
+.bg-layer--geo{
+  opacity:0.025;
+  background-image:
+    linear-gradient(30deg,var(--champagne-400) 1px,transparent 1px),
+    linear-gradient(150deg,var(--champagne-400) 1px,transparent 1px),
+    linear-gradient(-30deg,var(--champagne-400) 1px,transparent 1px);
+  background-size:60px 104px;
+}
+
+.bg-layer--grain{
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity:0.6;
+  mix-blend-mode:overlay;
+}
+
+/* ====== APP SHELL ====== */
+.app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+
+/* ====== HEADER ====== */
+.header{
+  text-align:center;
+  padding:3.5rem 2rem 1.5rem;
+  position:relative;
+  animation:fadeUp 0.8s ease-out both;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+.header__ornament{
+  display:flex;align-items:center;justify-content:center;gap:16px;
+  margin-bottom:1.5rem;
+}
+.header__ornament-line{
+  width:48px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--champagne-400),transparent);
+}
+.header__ornament-diamond{
+  width:8px;height:8px;
+  background:var(--champagne-400);
+  transform:rotate(45deg);
+  box-shadow:0 0 8px rgba(212,181,116,0.4);
+}
+
+.header__title{
+  font-family:var(--font-display);
+  font-size:clamp(2.5rem,6vw,4.2rem);
+  font-weight:600;
+  letter-spacing:0.04em;
+  line-height:1.1;
+  background:var(--champagne-shine);
+  background-size:300% auto;
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  animation:shine 6s linear infinite;
+  margin-bottom:0.75rem;
+}
+@keyframes shine{0%{background-position:150% center}100%{background-position:-50% center}}
+
+.header__sub{
+  font-family:var(--font-body);
+  font-size:0.9rem;
+  color:var(--text-secondary);
+  font-weight:300;
+  letter-spacing:0.12em;
+}
+.header__sub span{
+  color:var(--champagne-400);
+  font-weight:500;
+}
+
+/* ====== MAIN LAYOUT ====== */
+.main{
+  flex:1;
+  display:grid;
+  grid-template-columns:1fr 400px;
+  gap:2.5rem;
+  max-width:1440px;
+  margin:0 auto;
+  padding:1rem 2.5rem 3rem;
+  width:100%;
+  align-items:start;
+}
+@media(max-width:1100px){
+  .main{grid-template-columns:1fr;max-width:580px;padding:1rem 1.5rem 3rem}
+}
+
+/* ====== WHEEL SECTION ====== */
+.wheel-section{
+  display:flex;flex-direction:column;align-items:center;
+  position:relative;
+  animation:fadeUp 0.8s 0.15s ease-out both;
+}
+
+.wheel-stage{
+  position:relative;
+  width:min(480px,78vw);
+  height:min(480px,78vw);
+  margin:0 auto;
+}
+
+/* Outer glow */
+.wheel-glow{
+  position:absolute;inset:-40px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(212,181,116,0.06) 30%,transparent 70%);
+  animation:glowPulse 4s ease-in-out infinite;
+}
+@keyframes glowPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.6;transform:scale(1.03)}}
+
+/* Art Deco ring markers */
+.wheel-deco-ring{
+  position:absolute;inset:-18px;z-index:1;
+  border-radius:50%;
+  border:1px solid var(--border-light);
+}
+.wheel-deco-ring::before{
+  content:'';position:absolute;inset:6px;
+  border-radius:50%;
+  border:1px solid rgba(212,181,116,0.06);
+}
+.wheel-deco-ring::after{
+  content:'';position:absolute;inset:-8px;
+  border-radius:50%;
+  border:1px solid rgba(212,181,116,0.04);
+}
+
+/* Tick marks around the ring */
+.wheel-ticks{
+  position:absolute;inset:-18px;z-index:2;
+  border-radius:50%;
+}
+.wheel-tick{
+  position:absolute;
+  width:2px;height:10px;
+  background:var(--champagne-400);
+  opacity:0.3;
+  transform-origin:center center;
+}
+.wheel-tick--major{
+  height:14px;width:2.5px;
+  opacity:0.6;
+  box-shadow:0 0 4px rgba(212,181,116,0.3);
+}
+
+/* LED dots */
+.wheel-leds{
+  position:absolute;inset:-26px;z-index:2;
+  border-radius:50%;
+}
+.wheel-led{
+  position:absolute;
+  width:6px;height:6px;
+  border-radius:50%;
+  background:var(--champagne-300);
+  box-shadow:0 0 6px rgba(212,181,116,0.5);
+  transition:opacity 0.3s;
+}
+.wheel-led:nth-child(odd){animation:ledBlink 2s ease-in-out infinite}
+.wheel-led:nth-child(even){animation:ledBlink 2s 1s ease-in-out infinite}
+@keyframes ledBlink{0%,100%{opacity:1}50%{opacity:0.2}}
+
+/* Metallic rim */
+.wheel-rim{
+  position:absolute;inset:-6px;z-index:2;
+  border-radius:50%;
+  background:conic-gradient(from 0deg,
+    #a67c3a,#d4b574,#f5e6c8,#d4b574,#a67c3a,
+    #d4b574,#f5e6c8,#d4b574,#a67c3a,
+    #d4b574,#f5e6c8,#d4b574,#a67c3a
+  );
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.3),
+    0 4px 20px rgba(0,0,0,0.4),
+    inset 0 1px 2px rgba(255,255,255,0.15),
+    inset 0 -1px 2px rgba(0,0,0,0.3);
+}
+.wheel-rim::after{
+  content:'';position:absolute;inset:5px;
+  border-radius:50%;
+  background:var(--bg-deep);
+  box-shadow:inset 0 2px 6px rgba(0,0,0,0.5);
+}
+
+canvas#wheelCanvas{
+  position:relative;z-index:3;
+  width:100%;height:100%;
+  border-radius:50%;
+  filter:drop-shadow(0 2px 12px rgba(0,0,0,0.3));
+  transition:transform 5.5s cubic-bezier(0.15,0.75,0.1,1);
+}
+
+/* Pointer - Art Deco style */
+.wheel-pointer{
+  position:absolute;z-index:5;
+  top:-4px;left:50%;
+  transform:translateX(-50%);
+  filter:drop-shadow(0 4px 12px rgba(212,181,116,0.4));
+}
+.wheel-pointer svg{display:block}
+
+/* Center hub */
+.wheel-hub{
+  position:absolute;z-index:4;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:88px;height:88px;
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#f5e6c8,#d4b574 40%,#a67c3a 80%,#8a6630);
+  border:2px solid var(--champagne-200);
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:
+    0 4px 24px rgba(166,124,58,0.4),
+    inset 0 2px 4px rgba(255,255,255,0.25),
+    inset 0 -2px 4px rgba(0,0,0,0.2);
+  transition:all 0.3s ease;
+  user-select:none;
+}
+.wheel-hub::before{
+  content:'';position:absolute;inset:6px;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,0.15);
+}
+.wheel-hub__label{
+  font-family:var(--font-serif);
+  font-size:0.8rem;
+  font-weight:700;
+  color:var(--bg-deep);
+  letter-spacing:0.15em;
+  text-shadow:0 1px 0 rgba(255,255,255,0.2);
+  position:relative;z-index:1;
+}
+.wheel-hub:hover{
+  transform:translate(-50%,-50%) scale(1.06);
+  box-shadow:
+    0 6px 32px rgba(166,124,58,0.5),
+    inset 0 2px 4px rgba(255,255,255,0.25),
+    inset 0 -2px 4px rgba(0,0,0,0.2);
+}
+.wheel-hub:active{transform:translate(-50%,-50%) scale(0.97)}
+.wheel-hub.disabled{opacity:0.4;cursor:not-allowed;pointer-events:none}
+
+/* ====== STATS ====== */
+.stats-bar{
+  display:flex;gap:1rem;
+  margin-top:2.5rem;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+.stat-card{
+  background:var(--bg-glass);
+  backdrop-filter:blur(20px) saturate(1.2);
+  -webkit-backdrop-filter:blur(20px) saturate(1.2);
+  border:1px solid var(--border-hairline);
+  border-radius:var(--radius-md);
+  padding:1.1rem 1.6rem;
+  text-align:center;
+  min-width:130px;
+  transition:all 0.35s ease;
+  position:relative;
+  overflow:hidden;
+}
+.stat-card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(212,181,116,0.03) 0%,transparent 60%);
+  opacity:0;transition:opacity 0.35s;
+}
+.stat-card:hover{
+  border-color:var(--border-light);
+  transform:translateY(-2px);
+  box-shadow:var(--glow-sm);
+}
+.stat-card:hover::before{opacity:1}
+.stat-card__value{
+  font-family:var(--font-display);
+  font-size:1.7rem;
+  font-weight:600;
+  color:var(--champagne-300);
+  letter-spacing:0.02em;
+}
+.stat-card__label{
+  font-size:0.7rem;
+  color:var(--text-muted);
+  margin-top:4px;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+}
+
+/* ====== CONFIG PANEL ====== */
+.config-panel{
+  background:var(--bg-glass);
+  backdrop-filter:blur(24px) saturate(1.3);
+  -webkit-backdrop-filter:blur(24px) saturate(1.3);
+  border:1px solid var(--border-hairline);
+  border-radius:var(--radius-xl);
+  padding:2rem;
+  height:fit-content;
+  position:sticky;
+  top:2rem;
+  box-shadow:var(--shadow-card);
+  animation:fadeUp 0.8s 0.3s ease-out both;
+}
+@media(max-width:1100px){
+  .config-panel{position:static}
+}
+
+.config-panel__header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:1.5rem;
+  padding-bottom:1.2rem;
+  border-bottom:1px solid var(--border-hairline);
+}
+.config-panel__title{
+  font-family:var(--font-serif);
+  font-size:1.05rem;
+  font-weight:700;
+  color:var(--text-primary);
+  letter-spacing:0.03em;
+}
+.config-panel__count{
+  font-size:0.7rem;
+  color:var(--champagne-400);
+  background:rgba(212,181,116,0.06);
+  padding:5px 14px;
+  border-radius:100px;
+  border:1px solid var(--border-light);
+  letter-spacing:0.05em;
+}
+
+/* Probability warning */
+.prob-warning{
+  font-size:0.75rem;
+  color:var(--accent-ruby);
+  margin-bottom:1rem;
+  padding:10px 14px;
+  background:rgba(248,113,113,0.04);
+  border:1px solid rgba(248,113,113,0.12);
+  border-radius:var(--radius-sm);
+  display:none;
+  letter-spacing:0.02em;
+}
+.prob-warning.show{display:block}
+
+/* Prize list */
+.prize-list{
+  display:flex;flex-direction:column;gap:0.6rem;
+  margin-bottom:1.5rem;
+  max-height:380px;
+  overflow-y:auto;
+  padding-right:6px;
+}
+.prize-list::-webkit-scrollbar{width:3px}
+.prize-list::-webkit-scrollbar-track{background:transparent}
+.prize-list::-webkit-scrollbar-thumb{background:var(--champagne-600);border-radius:3px}
+
+.prize-item{
+  background:var(--bg-card);
+  border:1px solid var(--border-hairline);
+  border-radius:var(--radius-md);
+  padding:0.9rem 1rem;
+  transition:all 0.3s ease;
+  position:relative;
+  overflow:hidden;
+}
+.prize-item::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;
+  width:3px;
+  background:var(--item-color,var(--champagne-400));
+  border-radius:3px 0 0 3px;
+  opacity:0.8;
+}
+.prize-item:hover{
+  border-color:var(--border-light);
+  background:var(--bg-card-hover);
+}
+
+.prize-item__row{
+  display:flex;align-items:center;gap:0.7rem;
+}
+.prize-item__color{
+  width:26px;height:26px;
+  border-radius:var(--radius-xs);
+  border:2px solid rgba(255,255,255,0.08);
+  cursor:pointer;
+  flex-shrink:0;
+  transition:all 0.25s;
+  box-shadow:0 2px 6px rgba(0,0,0,0.2);
+}
+.prize-item__color:hover{transform:scale(1.12);border-color:rgba(255,255,255,0.2)}
+
+.prize-item__name{
+  flex:1;
+  background:transparent;
+  border:none;
+  color:var(--text-primary);
+  font-size:0.88rem;
+  font-family:var(--font-body);
+  font-weight:500;
+  outline:none;
+  padding:4px 0;
+  border-bottom:1px solid transparent;
+  transition:border-color 0.25s;
+}
+.prize-item__name:focus{border-bottom-color:var(--champagne-400)}
+
+.prize-item__prob{
+  width:52px;
+  text-align:right;
+  font-family:var(--font-display);
+  font-size:0.9rem;
+  font-weight:600;
+  color:var(--champagne-300);
+  flex-shrink:0;
+}
+.prize-item__delete{
+  width:26px;height:26px;
+  border-radius:var(--radius-xs);
+  border:none;
+  background:rgba(248,113,113,0.06);
+  color:var(--accent-ruby);
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.9rem;
+  transition:all 0.25s;
+  flex-shrink:0;
+  opacity:0.5;
+}
+.prize-item:hover .prize-item__delete{opacity:1}
+.prize-item__delete:hover{background:rgba(248,113,113,0.15);transform:scale(1.08)}
+
+.prize-item__slider{
+  margin-top:0.5rem;
+  width:100%;
+  -webkit-appearance:none;
+  appearance:none;
+  height:3px;
+  border-radius:3px;
+  background:rgba(255,255,255,0.04);
+  outline:none;
+}
+.prize-item__slider::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  width:12px;height:12px;
+  border-radius:50%;
+  background:var(--champagne-gradient);
+  cursor:pointer;
+  box-shadow:0 0 8px rgba(212,181,116,0.3);
+  transition:transform 0.2s;
+}
+.prize-item__slider::-webkit-slider-thumb:hover{transform:scale(1.2)}
+
+/* Buttons */
+.btn-add{
+  width:100%;
+  padding:12px;
+  border:1px solid var(--border-light);
+  border-radius:var(--radius-md);
+  background:transparent;
+  color:var(--champagne-300);
+  font-family:var(--font-body);
+  font-weight:500;
+  font-size:0.82rem;
+  cursor:pointer;
+  transition:all 0.3s ease;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  letter-spacing:0.04em;
+}
+.btn-add:hover{
+  background:rgba(212,181,116,0.04);
+  border-color:var(--border-accent);
+  box-shadow:var(--glow-sm);
+}
+
+.btn-reset{
+  width:100%;
+  padding:10px;
+  margin-top:0.6rem;
+  border:1px solid var(--border-hairline);
+  border-radius:var(--radius-md);
+  background:transparent;
+  color:var(--text-muted);
+  font-family:var(--font-body);
+  font-size:0.78rem;
+  cursor:pointer;
+  transition:all 0.25s;
+  letter-spacing:0.04em;
+}
+.btn-reset:hover{border-color:var(--border-light);color:var(--text-secondary)}
+
+/* History */
+.history-section{
+  margin-top:1.5rem;
+  padding-top:1.2rem;
+  border-top:1px solid var(--border-hairline);
+}
+.history-section__title{
+  font-size:0.72rem;
+  color:var(--text-muted);
+  margin-bottom:0.75rem;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+}
+.history-list{
+  display:flex;flex-direction:column;gap:3px;
+  max-height:140px;
+  overflow-y:auto;
+  padding-right:4px;
+}
+.history-list::-webkit-scrollbar{width:2px}
+.history-list::-webkit-scrollbar-thumb{background:var(--champagne-600);border-radius:2px}
+.history-item{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:6px 10px;
+  background:rgba(255,255,255,0.015);
+  border-radius:var(--radius-xs);
+  font-size:0.78rem;
+  transition:background 0.2s;
+}
+.history-item:hover{background:rgba(255,255,255,0.03)}
+.history-item__name{color:var(--text-secondary);font-weight:500}
+.history-item__time{color:var(--text-muted);font-size:0.68rem;font-family:var(--font-display)}
+
+/* ====== MODAL ====== */
+.modal-overlay{
+  position:fixed;inset:0;z-index:100;
+  background:rgba(8,9,14,0.8);
+  backdrop-filter:blur(12px);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;
+  transition:opacity 0.5s ease;
+}
+.modal-overlay.show{opacity:1;pointer-events:all}
+
+.modal{
+  background:var(--bg-surface);
+  border:1px solid var(--border-light);
+  border-radius:var(--radius-xl);
+  padding:3rem 2.5rem;
+  text-align:center;
+  max-width:400px;
+  width:90%;
+  transform:scale(0.92) translateY(16px);
+  transition:transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow:var(--shadow-elevated),var(--glow-md);
+  position:relative;
+  overflow:hidden;
+}
+.modal::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(212,181,116,0.04) 0%,transparent 50%);
+  pointer-events:none;
+}
+.modal-overlay.show .modal{transform:scale(1) translateY(0)}
+
+.modal__icon{font-size:3.5rem;margin-bottom:1rem}
+.modal__title{
+  font-family:var(--font-display);
+  font-size:1.6rem;
+  font-weight:600;
+  letter-spacing:0.03em;
+  background:var(--champagne-shine);
+  background-size:300% auto;
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  animation:shine 4s linear infinite;
+  margin-bottom:0.5rem;
+}
+.modal__prize{
+  font-family:var(--font-serif);
+  font-size:1.15rem;
+  color:var(--champagne-300);
+  margin-bottom:2rem;
+  font-weight:600;
+}
+.modal__close{
+  padding:11px 36px;
+  border:1px solid var(--border-accent);
+  border-radius:100px;
+  background:rgba(212,181,116,0.06);
+  color:var(--champagne-300);
+  font-family:var(--font-body);
+  font-weight:500;
+  font-size:0.85rem;
+  cursor:pointer;
+  transition:all 0.3s;
+  letter-spacing:0.05em;
+}
+.modal__close:hover{
+  background:rgba(212,181,116,0.12);
+  box-shadow:var(--glow-sm);
+}
+
+/* Confetti */
+#confettiCanvas{position:fixed;inset:0;z-index:99;pointer-events:none}
+
+/* Color picker */
+.color-picker-popup{
+  position:absolute;z-index:50;
+  background:var(--bg-surface);
+  border:1px solid var(--border-light);
+  border-radius:var(--radius-md);
+  padding:12px;
+  display:none;
+  grid-template-columns:repeat(5,1fr);
+  gap:6px;
+  box-shadow:var(--shadow-elevated);
+}
+.color-picker-popup.show{display:grid}
+.color-swatch{
+  width:28px;height:28px;
+  border-radius:var(--radius-xs);
+  cursor:pointer;
+  border:2px solid transparent;
+  transition:all 0.2s;
+}
+.color-swatch:hover{transform:scale(1.15);border-color:rgba(255,255,255,0.25)}
+
+/* ====== FOOTER ====== */
+.footer{
+  text-align:center;
+  padding:2rem;
+  color:var(--text-muted);
+  font-size:0.7rem;
+  letter-spacing:0.15em;
+  border-top:1px solid var(--border-hairline);
+}
+.footer span{color:var(--champagne-400)}
+
+/* ====== RESPONSIVE ====== */
+@media(max-width:600px){
+  .header{padding:2.5rem 1.5rem 1rem}
+  .main{padding:0.5rem 1rem 2rem}
+  .wheel-stage{width:min(340px,85vw);height:min(340px,85vw)}
+  .wheel-hub{width:68px;height:68px}
+  .wheel-hub__label{font-size:0.7rem}
+  .stat-card{min-width:100px;padding:0.9rem 1.2rem}
+  .config-panel{padding:1.5rem}
+}
+</style>
+</head>
+<body>
+
+<!-- Background layers -->
+<div class="bg-layer bg-layer--gradient"></div>
+<div class="bg-layer bg-layer--geo"></div>
+<div class="bg-layer bg-layer--grain"></div>
+
+<div class="app">
+  <header class="header">
+    <div class="header__ornament">
+      <div class="header__ornament-line"></div>
+      <div class="header__ornament-diamond"></div>
+      <div class="header__ornament-line"></div>
+    </div>
+    <h1 class="header__title">Fortune Wheel</h1>
+    <p class="header__sub">尊享转盘抽奖 &middot; <span>每一次旋转都是幸运的开始</span></p>
+  </header>
+
+  <main class="main">
+    <section class="wheel-section">
+      <div class="wheel-stage">
+        <div class="wheel-glow"></div>
+        <div class="wheel-deco-ring"></div>
+        <div class="wheel-ticks" id="wheelTicks"></div>
+        <div class="wheel-leds" id="wheelLeds"></div>
+        <div class="wheel-rim"></div>
+
+        <!-- Pointer (Art Deco arrow) -->
+        <div class="wheel-pointer">
+          <svg width="32" height="44" viewBox="0 0 32 44" fill="none">
+            <defs>
+              <linearGradient id="ptrGrad" x1="16" y1="0" x2="16" y2="44" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#f5e6c8"/>
+                <stop offset="50%" stop-color="#d4b574"/>
+                <stop offset="100%" stop-color="#a67c3a"/>
+              </linearGradient>
+            </defs>
+            <path d="M16 44 L2 8 Q2 0 16 0 Q30 0 30 8 Z" fill="url(#ptrGrad)" stroke="#f5e6c8" stroke-width="0.5"/>
+            <circle cx="16" cy="10" r="3" fill="#08090e" opacity="0.3"/>
+          </svg>
+        </div>
+
+        <canvas id="wheelCanvas" width="500" height="500"></canvas>
+        <div class="wheel-hub" id="spinBtn" onclick="spin()">
+          <span class="wheel-hub__label">抽奖</span>
+        </div>
+      </div>
+
+      <div class="stats-bar">
+        <div class="stat-card">
+          <div class="stat-card__value" id="totalSpins">0</div>
+          <div class="stat-card__label">总次数</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__value" id="winCount">0</div>
+          <div class="stat-card__label">中奖</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__value" id="winRate">0%</div>
+          <div class="stat-card__label">中奖率</div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="config-panel">
+      <div class="config-panel__header">
+        <h2 class="config-panel__title">奖品配置</h2>
+        <span class="config-panel__count" id="prizeCount">4 项奖品</span>
+      </div>
+
+      <div class="prob-warning" id="probWarning">
+        &#9888; 概率总和须为 100%，当前：<span id="probTotal">100</span>%
+      </div>
+
+      <div class="prize-list" id="prizeList"></div>
+
+      <button class="btn-add" onclick="addPrize()">+ 添加奖品</button>
+      <button class="btn-reset" onclick="resetPrizes()">恢复默认</button>
+
+      <div class="history-section">
+        <div class="history-section__title">抽奖记录</div>
+        <div class="history-list" id="historyList">
+          <div style="text-align:center;color:var(--text-muted);font-size:0.78rem;padding:1rem">暂无记录</div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="footer">
+    <span>&#9670;</span> &nbsp; FORTUNE WHEEL &middot; CRAFTED WITH EXCELLENCE &nbsp; <span>&#9670;</span>
+  </footer>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="resultModal">
+  <div class="modal">
+    <div class="modal__icon" id="modalIcon">&#127881;</div>
+    <h3 class="modal__title">恭喜中奖</h3>
+    <p class="modal__prize" id="modalPrize">一等奖</p>
+    <button class="modal__close" onclick="closeModal()">收下奖品</button>
+  </div>
+</div>
+
+<canvas id="confettiCanvas"></canvas>
+<div class="color-picker-popup" id="colorPicker"></div>
+
+<script>
+// ============ DATA ============
+const DEFAULT_PRIZES = [
+  { name: '一等奖', prob: 5, color: '#e74c3c' },
+  { name: '二等奖', prob: 15, color: '#f39c12' },
+  { name: '三等奖', prob: 30, color: '#2ecc71' },
+  { name: '谢谢参与', prob: 50, color: '#3498db' }
+];
+
+const PALETTE = [
+  '#e74c3c','#e67e22','#f39c12','#f1c40f','#2ecc71',
+  '#1abc9c','#16a085','#3498db','#2980b9','#9b59b6',
+  '#8e44ad','#e84393','#d63031','#fd79a8','#fdcb6e',
+  '#6c5ce7','#00b894','#00cec9','#636e72','#2d3436'
+];
+
+let prizes = JSON.parse(JSON.stringify(DEFAULT_PRIZES));
+let isSpinning = false;
+let currentRotation = 0;
+let stats = { total: 0, wins: 0 };
+let history = [];
+
+// ============ WHEEL DRAWING ============
+const canvas = document.getElementById('wheelCanvas');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+const CX = W / 2, CY = H / 2;
+const R = W / 2 - 8;
+
+function drawWheel() {
+  ctx.clearRect(0, 0, W, H);
+  const total = prizes.reduce((s, p) => s + p.prob, 0);
+  if (total === 0) return;
+
+  let startAngle = -Math.PI / 2;
+
+  prizes.forEach((prize, i) => {
+    const sliceAngle = (prize.prob / total) * 2 * Math.PI;
+    const endAngle = startAngle + sliceAngle;
+    const midAngle = startAngle + sliceAngle / 2;
+
+    // Slice
+    ctx.beginPath();
+    ctx.moveTo(CX, CY);
+    ctx.arc(CX, CY, R, startAngle, endAngle);
+    ctx.closePath();
+
+    // Rich gradient
+    const grad = ctx.createRadialGradient(CX, CY, 0, CX, CY, R);
+    grad.addColorStop(0, lighten(prize.color, 40));
+    grad.addColorStop(0.4, lighten(prize.color, 15));
+    grad.addColorStop(0.75, prize.color);
+    grad.addColorStop(1, darken(prize.color, 25));
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Subtle inner shadow
+    ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Divider line (gold)
+    ctx.save();
+    ctx.translate(CX, CY);
+    ctx.rotate(startAngle);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(R, 0);
+    ctx.strokeStyle = 'rgba(212,181,116,0.15)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.restore();
+
+    // Text
+    ctx.save();
+    ctx.translate(CX, CY);
+    ctx.rotate(midAngle);
+
+    const textR = R * 0.62;
+    const fontSize = Math.min(15, Math.max(10, sliceAngle * R * 0.22));
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = `700 ${fontSize}px "DM Sans","Noto Serif SC",sans-serif`;
+    ctx.fillStyle = '#fff';
+    ctx.shadowColor = 'rgba(0,0,0,0.6)';
+    ctx.shadowBlur = 6;
+    ctx.shadowOffsetY = 1;
+    ctx.fillText(prize.name, textR, -fontSize * 0.35);
+
+    ctx.font = `600 ${fontSize * 0.7}px "Cormorant Garamond",serif`;
+    ctx.fillStyle = 'rgba(255,255,255,0.65)';
+    ctx.shadowBlur = 3;
+    ctx.fillText(`${prize.prob}%`, textR, fontSize * 0.45);
+
+    ctx.restore();
+    startAngle = endAngle;
+  });
+
+  // Inner hub circle (drawn on canvas for seamless look)
+  ctx.beginPath();
+  ctx.arc(CX, CY, 48, 0, Math.PI * 2);
+  const hubGrad = ctx.createRadialGradient(CX - 8, CY - 8, 0, CX, CY, 48);
+  hubGrad.addColorStop(0, '#2a2540');
+  hubGrad.addColorStop(0.7, '#1a1830');
+  hubGrad.addColorStop(1, '#131522');
+  ctx.fillStyle = hubGrad;
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(212,181,116,0.2)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+}
+
+function lighten(hex, pct) {
+  const n = parseInt(hex.slice(1), 16);
+  const r = Math.min(255, (n >> 16) + pct);
+  const g = Math.min(255, ((n >> 8) & 0xff) + pct);
+  const b = Math.min(255, (n & 0xff) + pct);
+  return `rgb(${r},${g},${b})`;
+}
+function darken(hex, pct) {
+  const n = parseInt(hex.slice(1), 16);
+  const r = Math.max(0, (n >> 16) - pct);
+  const g = Math.max(0, ((n >> 8) & 0xff) - pct);
+  const b = Math.max(0, (n & 0xff) - pct);
+  return `rgb(${r},${g},${b})`;
+}
+
+// ============ SPIN ============
+function spin() {
+  if (isSpinning) return;
+  const total = prizes.reduce((s, p) => s + p.prob, 0);
+  if (total !== 100) {
+    document.getElementById('probWarning').classList.add('show');
+    return;
+  }
+  isSpinning = true;
+  document.getElementById('spinBtn').classList.add('disabled');
+
+  const rand = Math.random() * 100;
+  let cum = 0, winnerIndex = 0;
+  for (let i = 0; i < prizes.length; i++) {
+    cum += prizes[i].prob;
+    if (rand < cum) { winnerIndex = i; break; }
+  }
+
+  const totalProb = prizes.reduce((s, p) => s + p.prob, 0);
+  let angleBefore = 0;
+  for (let i = 0; i < winnerIndex; i++) angleBefore += (prizes[i].prob / totalProb) * 360;
+  const sliceAngle = (prizes[winnerIndex].prob / totalProb) * 360;
+  const randomInSlice = Math.random() * sliceAngle * 0.7 + sliceAngle * 0.15;
+  const target = angleBefore + randomInSlice;
+
+  const rotations = 6 + Math.floor(Math.random() * 3);
+  currentRotation += rotations * 360 + (360 - target);
+
+  canvas.style.transition = 'transform 5.5s cubic-bezier(0.15, 0.75, 0.1, 1)';
+  canvas.style.transform = `rotate(${currentRotation}deg)`;
+
+  setTimeout(() => {
+    isSpinning = false;
+    document.getElementById('spinBtn').classList.remove('disabled');
+    showResult(prizes[winnerIndex]);
+    updateStats(prizes[winnerIndex]);
+  }, 5800);
+}
+
+function showResult(prize) {
+  const isWin = prize.name !== '谢谢参与';
+  document.getElementById('modalIcon').textContent = isWin ? '\u{1F389}' : '\u{1F4AB}';
+  document.querySelector('.modal__title').textContent = isWin ? '恭喜中奖' : '感谢参与';
+  document.getElementById('modalPrize').textContent = prize.name;
+  document.getElementById('resultModal').classList.add('show');
+  if (isWin) launchConfetti();
+
+  const now = new Date();
+  const t = [now.getHours(), now.getMinutes(), now.getSeconds()].map(v => String(v).padStart(2, '0')).join(':');
+  history.unshift({ name: prize.name, time: t });
+  if (history.length > 20) history.pop();
+  renderHistory();
+}
+
+function closeModal() {
+  document.getElementById('resultModal').classList.remove('show');
+}
+
+function updateStats(prize) {
+  stats.total++;
+  if (prize.name !== '谢谢参与') stats.wins++;
+  document.getElementById('totalSpins').textContent = stats.total;
+  document.getElementById('winCount').textContent = stats.wins;
+  document.getElementById('winRate').textContent = stats.total ? Math.round(stats.wins / stats.total * 100) + '%' : '0%';
+}
+
+// ============ CONFETTI ============
+function launchConfetti() {
+  const cc = document.getElementById('confettiCanvas');
+  const cctx = cc.getContext('2d');
+  cc.width = window.innerWidth;
+  cc.height = window.innerHeight;
+
+  const particles = [];
+  const colors = ['#f5e6c8','#d4b574','#e74c3c','#2ecc71','#3498db','#9b59b6','#f39c12','#fd79a8','#6c5ce7','#00b894'];
+
+  for (let i = 0; i < 180; i++) {
+    particles.push({
+      x: cc.width / 2 + (Math.random() - 0.5) * 300,
+      y: cc.height / 2 - 50,
+      vx: (Math.random() - 0.5) * 22,
+      vy: -Math.random() * 22 - 6,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      size: Math.random() * 8 + 3,
+      rotation: Math.random() * 360,
+      rotSpeed: (Math.random() - 0.5) * 12,
+      gravity: 0.28 + Math.random() * 0.15,
+      opacity: 1,
+      shape: ['rect', 'circle', 'strip'][Math.floor(Math.random() * 3)]
+    });
+  }
+
+  let frame = 0;
+  function animate() {
+    cctx.clearRect(0, 0, cc.width, cc.height);
+    let alive = false;
+    particles.forEach(p => {
+      if (p.opacity <= 0) return;
+      alive = true;
+      p.x += p.vx;
+      p.vy += p.gravity;
+      p.y += p.vy;
+      p.rotation += p.rotSpeed;
+      p.vx *= 0.99;
+      if (frame > 50) p.opacity -= 0.012;
+
+      cctx.save();
+      cctx.translate(p.x, p.y);
+      cctx.rotate(p.rotation * Math.PI / 180);
+      cctx.globalAlpha = Math.max(0, p.opacity);
+      cctx.fillStyle = p.color;
+
+      if (p.shape === 'rect') {
+        cctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+      } else if (p.shape === 'strip') {
+        cctx.fillRect(-p.size / 2, -1, p.size, 2.5);
+      } else {
+        cctx.beginPath();
+        cctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+        cctx.fill();
+      }
+      cctx.restore();
+    });
+    frame++;
+    if (alive && frame < 220) requestAnimationFrame(animate);
+    else cctx.clearRect(0, 0, cc.width, cc.height);
+  }
+  animate();
+}
+
+// ============ CONFIG ============
+function renderPrizeList() {
+  const list = document.getElementById('prizeList');
+  list.innerHTML = '';
+  prizes.forEach((prize, i) => {
+    const item = document.createElement('div');
+    item.className = 'prize-item';
+    item.style.setProperty('--item-color', prize.color);
+    item.innerHTML = `
+      <div class="prize-item__row">
+        <div class="prize-item__color" style="background:${prize.color}" onclick="openColorPicker(${i}, this)"></div>
+        <input class="prize-item__name" value="${prize.name}" onchange="updatePrizeName(${i}, this.value)" />
+        <span class="prize-item__prob">${prize.prob}%</span>
+        <button class="prize-item__delete" onclick="deletePrize(${i})">&times;</button>
+      </div>
+      <input type="range" class="prize-item__slider" min="1" max="100" value="${prize.prob}"
+        oninput="updatePrizeProb(${i}, parseInt(this.value))" />
+    `;
+    list.appendChild(item);
+  });
+  document.getElementById('prizeCount').textContent = `${prizes.length} 项奖品`;
+  validateProbabilities();
+  drawWheel();
+}
+
+function updatePrizeName(i, v) { prizes[i].name = v; drawWheel(); }
+function updatePrizeProb(i, v) { prizes[i].prob = v; renderPrizeList(); }
+function deletePrize(i) {
+  if (prizes.length <= 2) return alert('至少需要保留 2 个奖品');
+  prizes.splice(i, 1);
+  renderPrizeList();
+}
+function addPrize() {
+  const used = new Set(prizes.map(p => p.color));
+  const newColor = PALETTE.find(c => !used.has(c)) || PALETTE[Math.floor(Math.random() * PALETTE.length)];
+  const eq = Math.floor(100 / (prizes.length + 1));
+  const rem = 100 - eq * (prizes.length + 1);
+  prizes.forEach(p => p.prob = eq);
+  prizes.push({ name: `奖品${prizes.length + 1}`, prob: eq + rem, color: newColor });
+  renderPrizeList();
+}
+function resetPrizes() { prizes = JSON.parse(JSON.stringify(DEFAULT_PRIZES)); renderPrizeList(); }
+
+function validateProbabilities() {
+  const total = prizes.reduce((s, p) => s + p.prob, 0);
+  const w = document.getElementById('probWarning');
+  document.getElementById('probTotal').textContent = total;
+  w.classList.toggle('show', total !== 100);
+}
+
+// ============ COLOR PICKER ============
+let activeCP = null;
+function openColorPicker(index, el) {
+  const picker = document.getElementById('colorPicker');
+  const rect = el.getBoundingClientRect();
+  picker.innerHTML = '';
+  PALETTE.forEach(color => {
+    const s = document.createElement('div');
+    s.className = 'color-swatch';
+    s.style.background = color;
+    s.onclick = (e) => {
+      e.stopPropagation();
+      prizes[index].color = color;
+      picker.classList.remove('show');
+      activeCP = null;
+      renderPrizeList();
+    };
+    picker.appendChild(s);
+  });
+  picker.style.top = (rect.bottom + window.scrollY + 8) + 'px';
+  picker.style.left = Math.min(rect.left + window.scrollX, window.innerWidth - 200) + 'px';
+  picker.classList.add('show');
+  activeCP = index;
+}
+document.addEventListener('click', (e) => {
+  const picker = document.getElementById('colorPicker');
+  if (!picker.contains(e.target)) { picker.classList.remove('show'); activeCP = null; }
+});
+
+// ============ HISTORY ============
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  if (!history.length) {
+    list.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:0.78rem;padding:1rem">暂无记录</div>';
+    return;
+  }
+  list.innerHTML = history.map(h => `
+    <div class="history-item">
+      <span class="history-item__name">${h.name}</span>
+      <span class="history-item__time">${h.time}</span>
+    </div>
+  `).join('');
+}
+
+// ============ DECORATIONS ============
+function createTicks() {
+  const container = document.getElementById('wheelTicks');
+  const count = 60;
+  const size = container.offsetWidth || 516;
+  const radius = size / 2;
+  for (let i = 0; i < count; i++) {
+    const tick = document.createElement('div');
+    const isMajor = i % 5 === 0;
+    tick.className = 'wheel-tick' + (isMajor ? ' wheel-tick--major' : '');
+    const angle = (i / count) * 360;
+    const h = isMajor ? 14 : 10;
+    tick.style.cssText = `
+      left:${radius - 1}px;
+      top:0;
+      height:${h}px;
+      transform-origin:center ${radius}px;
+      transform:rotate(${angle}deg);
+    `;
+    container.appendChild(tick);
+  }
+}
+
+function createLeds() {
+  const container = document.getElementById('wheelLeds');
+  const count = 20;
+  const size = container.offsetWidth || 532;
+  const radius = size / 2;
+  for (let i = 0; i < count; i++) {
+    const led = document.createElement('div');
+    led.className = 'wheel-led';
+    const angle = (i / count) * Math.PI * 2 - Math.PI / 2;
+    const x = Math.cos(angle) * (radius - 3) + radius;
+    const y = Math.sin(angle) * (radius - 3) + radius;
+    led.style.left = x + 'px';
+    led.style.top = y + 'px';
+    led.style.transform = 'translate(-50%,-50%)';
+    container.appendChild(led);
+  }
+}
+
+// ============ INIT ============
+window.addEventListener('load', () => {
+  drawWheel();
+  renderPrizeList();
+  createTicks();
+  createLeds();
+});
+window.addEventListener('resize', () => {
+  const cc = document.getElementById('confettiCanvas');
+  cc.width = window.innerWidth;
+  cc.height = window.innerHeight;
+});
+</script>
+</body>
+</html>
